@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discover — NKUMU</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .discover-hero {
+      padding: calc(var(--header-h) + 2.5rem) 0 2.5rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .discover-hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 0.5rem; }
+    .discover-hero p { color: var(--text-2); }
+
+    .search-bar {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0 1rem;
+      margin-top: 1.5rem; max-width: 500px;
+      transition: border-color var(--t);
+    }
+    .search-bar:focus-within { border-color: var(--gold); }
+    .search-bar svg { width: 18px; height: 18px; stroke: var(--text-3); flex-shrink: 0; }
+    .search-bar input {
+      flex: 1; background: none; border: none; outline: none;
+      padding: 0.85rem 0; font-size: 0.95rem;
+      color: var(--text-1); font-family: inherit;
+    }
+    .search-bar input::placeholder { color: var(--text-3); }
+
+    .discover-layout {
+      display: grid; grid-template-columns: 240px 1fr;
+      gap: 2rem; padding: 2rem 0;
+    }
+    .filter-sidebar { position: sticky; top: calc(var(--header-h) + 1rem); }
+    .filter-group { margin-bottom: 1.75rem; }
+    .filter-group h4 {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-3);
+      margin-bottom: 0.75rem;
+    }
+    .filter-option {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 6px 10px; border-radius: var(--radius-sm);
+      cursor: pointer; transition: background var(--t);
+      font-size: 0.86rem; color: var(--text-2);
+    }
+    .filter-option:hover { background: var(--card); color: var(--text-1); }
+    .filter-option.active { background: var(--gold-glow-sm); color: var(--gold); }
+    .filter-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .results-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .results-count { font-size: 0.85rem; color: var(--text-3); }
+    .sort-select {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 6px 10px;
+      font-size: 0.82rem; color: var(--text-2);
+      font-family: inherit; cursor: pointer;
+    }
+    .sort-select:focus { outline: none; border-color: var(--gold); }
+
+    .tracks-grid {
+      display: flex; flex-direction: column; gap: 0.25rem;
+    }
+
+    .track-row {
+      display: grid;
+      grid-template-columns: 32px 48px 1fr 90px 55px 65px 100px;
+      align-items: center; gap: 1rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background var(--t);
+      border: 1px solid transparent;
+    }
+    .track-row:hover { background: var(--card); border-color: var(--border); }
+    .track-row-num { font-size: 0.9rem; color: var(--text-3); font-variant-numeric: tabular-nums; }
+    .track-row-art {
+      width: 44px; height: 44px; border-radius: var(--radius-sm);
+      position: relative; flex-shrink: 0;
+    }
+    .track-row-play {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.55);
+      border-radius: inherit;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity var(--t);
+    }
+    .track-row-play svg { width: 16px; height: 16px; fill: white; stroke: white; }
+    .track-row:hover .track-row-play { opacity: 1; }
+    .track-row-info strong { display: block; font-size: 0.9rem; }
+    .track-row-info span { font-size: 0.75rem; color: var(--text-3); }
+    .track-row-genre {
+      font-size: 0.72rem; background: var(--card);
+      padding: 3px 8px; border-radius: 4px; color: var(--text-2);
+      text-align: center;
+    }
+    .track-row-dur { font-size: 0.82rem; color: var(--text-3); text-align: right; }
+    .track-row-plays { font-size: 0.82rem; color: var(--text-2); text-align: right; font-variant-numeric: tabular-nums; }
+    .track-row-actions { display: flex; gap: 4px; justify-content: flex-end; }
+    .track-row-btn {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-3); transition: all var(--t);
+    }
+    .track-row-btn svg { width: 15px; height: 15px; }
+    .track-row-btn:hover { color: var(--gold); background: var(--gold-glow-sm); }
+    .track-row-btn.buy-btn:hover { color: var(--green-light); background: rgba(0,168,84,0.1); }
+
+    .moods-row {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem;
+    }
+    .mood-chip {
+      padding: 6px 14px; border-radius: 40px;
+      border: 1px solid var(--border); font-size: 0.82rem;
+      color: var(--text-2); cursor: pointer; transition: all var(--t);
+    }
+    .mood-chip:hover { border-color: var(--gold); color: var(--gold); }
+    .mood-chip.active { background: var(--gold); color: #07070C; border-color: var(--gold); font-weight: 700; }
+
+    .new-releases-banner {
+      background: linear-gradient(135deg, rgba(252,209,22,0.06), rgba(0,168,84,0.04));
+      border: 1px solid rgba(252,209,22,0.15); border-radius: var(--radius);
+      padding: 1.25rem 1.5rem; margin-bottom: 2rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .new-releases-banner h3 { font-size: 1rem; }
+    .new-releases-banner p { font-size: 0.82rem; color: var(--text-2); margin-top: 2px; }
+
+    @media (max-width: 900px) {
+      .discover-layout { grid-template-columns: 1fr; }
+      .filter-sidebar { position: static; display: flex; flex-wrap: wrap; gap: 1rem; }
+      .filter-group { margin-bottom: 0; }
+      .track-row { grid-template-columns: 32px 44px 1fr auto; }
+      .track-row-genre, .track-row-dur, .track-row-plays { display: none; }
+      .track-row-actions { justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header scrolled" id="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">N</span>
+        <span class="logo-text">NKUMU</span>
+      </a>
+      <nav class="site-nav">
+        <a href="discover.html" style="color:var(--gold)">Discover</a>
+        <a href="index.html#artists">Artists</a>
+        <a href="index.html#charts">Charts</a>
+        <a href="certifications.html">Certifications</a>
+        <a href="index.html#awards">CAMAS Awards</a>
+      </nav>
+      <div class="header-actions">
+        <a href="#" class="btn btn-ghost">Log in</a>
+        <a href="#" class="btn btn-primary">Join Free</a>
+      </div>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-nav" id="mobile-nav" aria-hidden="true">
+      <a href="discover.html">Discover</a>
+      <a href="index.html#artists">Artists</a>
+      <a href="certifications.html">Certifications</a>
+      <a href="index.html#awards">CAMAS Awards</a>
+      <div class="mobile-nav-actions">
+        <a href="#" class="btn btn-ghost">Log in</a>
+        <a href="#" class="btn btn-primary">Join Free</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="discover-hero">
+      <div class="container">
+        <div class="section-eyebrow">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Discover
+        </div>
+        <h1>Find Your Sound</h1>
+        <p>58,000+ tracks from 2,400+ Cameroonian artists</p>
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="search" placeholder="Search artists, songs, albums, genres…" id="search-input">
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="discover-layout">
+
+        <!-- Filter Sidebar -->
+        <aside class="filter-sidebar">
+          <div class="filter-group">
+            <h4>Genre</h4>
+            <div class="filter-option active" data-filter="genre" data-val="all">
+              <div class="filter-dot" style="background:var(--gold)"></div> All Genres
+            </div>
+            <div class="filter-option" data-filter="genre" data-val="Makossa">
+              <div class="filter-dot" style="background:#FCD116"></div> Makossa
+            </div>
+            <div class="filter-option" data-filter="genre" data-val="Bikutsi">
+              <div class="filter-dot" style="background:#7B2FBE"></div> Bikutsi
+            </div>
+            <div class="filter-option" data-filter="genre" data-val="Afrobeat">
+              <div class="filter-dot" style="background:#CE1126"></div> Afrobeat
+            </div>
+            <div class="filter-option" data-filter="genre" data-val="Gospel">
+              <div class="filter-dot" style="background:#00A854"></div> Gospel
+            </div>
+            <div class="filter-option" data-filter="genre" data-val="Hip-Hop CM">
+              <div class="filter-dot" style="background:#0A6E8A"></div> Hip-Hop CM
+            </div>
+            <div class="filter-option" data-filter="genre" data-val="Zouk">
+              <div class="filter-dot" style="background:#E84393"></div> Zouk
+            </div>
+            <div class="filter-option" data-filter="genre" data-val="Coupé-Décalé">
+              <div class="filter-dot" style="background:#F07030"></div> Coupé-Décalé
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <h4>Certification</h4>
+            <div class="filter-option" data-filter="cert" data-val="diamond">
+              <div class="filter-dot" style="background:var(--diamond-c)"></div> Diamond
+            </div>
+            <div class="filter-option" data-filter="cert" data-val="platinum">
+              <div class="filter-dot" style="background:var(--platinum-c)"></div> Platinum
+            </div>
+            <div class="filter-option" data-filter="cert" data-val="gold">
+              <div class="filter-dot" style="background:var(--gold-c)"></div> Gold
+            </div>
+            <div class="filter-option" data-filter="cert" data-val="silver">
+              <div class="filter-dot" style="background:var(--silver-c)"></div> Silver
+            </div>
+            <div class="filter-option" data-filter="cert" data-val="bronze">
+              <div class="filter-dot" style="background:var(--bronze)"></div> Bronze
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <h4>Content Type</h4>
+            <div class="filter-option" data-filter="type" data-val="track">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--text-2)"><path d="M9 18V5l12-2v13"/></svg> Singles
+            </div>
+            <div class="filter-option" data-filter="type" data-val="album">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--text-2)"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> Albums
+            </div>
+            <div class="filter-option" data-filter="type" data-val="preorder">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--text-2)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Pre-Orders
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main content -->
+        <div class="discover-main">
+
+          <div class="new-releases-banner">
+            <div>
+              <h3>🔥 New This Week</h3>
+              <p>14 new tracks and 3 albums dropped this week</p>
+            </div>
+            <a href="#" class="btn btn-primary btn-sm">See New Releases</a>
+          </div>
+
+          <div class="moods-row">
+            <button class="mood-chip active">All</button>
+            <button class="mood-chip">🎉 Party</button>
+            <button class="mood-chip">❤️ Love</button>
+            <button class="mood-chip">🙏 Worship</button>
+            <button class="mood-chip">💪 Motivation</button>
+            <button class="mood-chip">🌙 Late Night</button>
+            <button class="mood-chip">🌍 Nostalgic</button>
+            <button class="mood-chip">🔥 Trap</button>
+          </div>
+
+          <div class="results-header">
+            <span class="results-count" id="results-count">Showing 12 of 58,432 tracks</span>
+            <select class="sort-select" id="sort-select">
+              <option>Most Streamed</option>
+              <option>Newest First</option>
+              <option>Top Rated</option>
+              <option>Alphabetical</option>
+            </select>
+          </div>
+
+          <div class="tracks-grid" id="tracks-grid">
+
+            <div class="track-row" data-genre="Makossa" data-cert="platinum">
+              <span class="track-row-num">1</span>
+              <div class="track-row-art" style="background:linear-gradient(135deg,#FCD116,#8B6914)">
+                <button class="track-row-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></button>
+              </div>
+              <div class="track-row-info"><strong>Douala Nights</strong><span>Parfait Mbongo</span></div>
+              <span class="track-row-genre">Makossa</span>
+              <span class="track-row-dur">4:23</span>
+              <span class="track-row-plays">1.2M</span>
+              <div class="track-row-actions">
+                <button class="track-row-btn" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                <button class="track-row-btn buy-btn" aria-label="Buy">500 XAF</button>
+                <button class="track-row-btn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+
+            <div class="track-row" data-genre="Gospel" data-cert="gold">
+              <span class="track-row-num">2</span>
+              <div class="track-row-art" style="background:linear-gradient(135deg,#00A854,#004A25)">
+                <button class="track-row-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></button>
+              </div>
+              <div class="track-row-info"><strong>Ma Mère</strong><span>Simba Draken</span></div>
+              <span class="track-row-genre">Gospel</span>
+              <span class="track-row-dur">5:01</span>
+              <span class="track-row-plays">800K</span>
+              <div class="track-row-actions">
+                <button class="track-row-btn" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                <button class="track-row-btn buy-btn" aria-label="Buy">500 XAF</button>
+                <button class="track-row-btn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+
+            <div class="track-row" data-genre="Afrobeat" data-cert="gold">
+              <span class="track-row-num">3</span>
+              <div class="track-row-art" style="background:linear-gradient(135deg,#CE1126,#6B0813)">
+                <button class="track-row-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></button>
+              </div>
+              <div class="track-row-info"><strong>Kamer Vibes</strong><span>DJ Kamer</span></div>
+              <span class="track-row-genre">Afrobeat</span>
+              <span class="track-row-dur">3:45</span>
+              <span class="track-row-plays">600K</span>
+              <div class="track-row-actions">
+                <button class="track-row-btn" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                <button class="track-row-btn buy-btn" aria-label="Buy">500 XAF</button>
+                <button class="track-row-btn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+
+            <div class="track-row" data-genre="Bikutsi" data-cert="silver">
+              <span class="track-row-num">4</span>
+              <div class="track-row-art" style="background:linear-gradient(135deg,#7B2FBE,#3A1460)">
+                <button class="track-row-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></button>
+              </div>
+              <div class="track-row-info"><strong>Bikutsi Queen</strong><span>Sylvie Bikutsi</span></div>
+              <span class="track-row-genre">Bikutsi</span>
+              <span class="track-row-dur">4:10</span>
+              <span class="track-row-plays">450K</span>
+              <div class="track-row-actions">
+                <button class="track-row-btn" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                <button class="track-row-btn buy-btn" aria-label="Buy">500 XAF</button>
+                <button class="track-row-btn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+
+            <div class="track-row" data-genre="Hip-Hop CM" data-cert="silver">
+              <span class="track-row-num">5</span>
+              <div class="track-row-art" style="background:linear-gradient(135deg,#0A6E8A,#04303D)">
+                <button class="track-row-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></button>
+              </div>
+              <div class="track-row-info"><strong>Rue de Mboppi</strong><span>MC Douala</span></div>
+              <span class="track-row-genre">Hip-Hop CM</span>
+              <span class="track-row-dur">3:20</span>
+              <span class="track-row-plays">220K</span>
+              <div class="track-row-actions">
+                <button class="track-row-btn" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                <button class="track-row-btn buy-btn" aria-label="Buy">500 XAF</button>
+                <button class="track-row-btn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+
+            <div class="track-row" data-genre="Zouk" data-cert="bronze">
+              <span class="track-row-num">6</span>
+              <div class="track-row-art" style="background:linear-gradient(135deg,#E84393,#6B0038)">
+                <button class="track-row-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></button>
+              </div>
+              <div class="track-row-info"><strong>Wouri Sunset</strong><span>Amina Wouri</span></div>
+              <span class="track-row-genre">Zouk</span>
+              <span class="track-row-dur">4:30</span>
+              <span class="track-row-plays">150K</span>
+              <div class="track-row-actions">
+                <button class="track-row-btn" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                <button class="track-row-btn buy-btn" aria-label="Buy">500 XAF</button>
+                <button class="track-row-btn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+
+            <div class="track-row" data-genre="Makossa" data-cert="bronze">
+              <span class="track-row-num">7</span>
+              <div class="track-row-art" style="background:linear-gradient(135deg,#F07030,#7A3010)">
+                <button class="track-row-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></button>
+              </div>
+              <div class="track-row-info"><strong>Amour Yaoundé</strong><span>Lionel Fotso</span></div>
+              <span class="track-row-genre">Makossa</span>
+              <span class="track-row-dur">3:58</span>
+              <span class="track-row-plays">98K</span>
+              <div class="track-row-actions">
+                <button class="track-row-btn" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                <button class="track-row-btn buy-btn" aria-label="Buy">500 XAF</button>
+                <button class="track-row-btn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+
+            <div class="track-row" data-genre="Bikutsi">
+              <span class="track-row-num">8</span>
+              <div class="track-row-art" style="background:linear-gradient(135deg,#2E8B57,#0D3D22)">
+                <button class="track-row-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></button>
+              </div>
+              <div class="track-row-info"><strong>Roots</strong><span>Les Frères Béti</span></div>
+              <span class="track-row-genre">Bikutsi</span>
+              <span class="track-row-dur">5:15</span>
+              <span class="track-row-plays">72K</span>
+              <div class="track-row-actions">
+                <button class="track-row-btn" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+                <button class="track-row-btn buy-btn" aria-label="Buy">500 XAF</button>
+                <button class="track-row-btn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="text-align:center; padding: 2rem 0;">
+            <a href="#" class="btn btn-outline">Load More Tracks</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Music Player -->
+  <div class="music-player" id="music-player">
+    <div class="player-track">
+      <div class="player-art" style="background:linear-gradient(135deg,#FCD116,#8B6914)" id="player-art"></div>
+      <div class="player-info">
+        <strong id="player-title">Douala Nights</strong>
+        <span id="player-artist">Diablit</span>
+      </div>
+      <button class="player-like" id="player-like">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </button>
+    </div>
+    <div class="player-controls">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <button class="player-btn" id="btn-prev"><svg viewBox="0 0 24 24"><polygon points="19,20 9,12 19,4"/><line x1="5" y1="19" x2="5" y2="5"/></svg></button>
+        <button class="player-btn player-play" id="btn-play">
+          <svg class="icon-play" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+        <button class="player-btn" id="btn-next"><svg viewBox="0 0 24 24"><polygon points="5,4 15,12 5,20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+      </div>
+      <div class="player-progress-section">
+        <span class="player-time" id="player-current">0:00</span>
+        <div class="player-progress-bar" id="player-bar">
+          <div class="player-progress-fill" id="player-fill"></div>
+          <div class="player-progress-thumb" id="player-thumb"></div>
+        </div>
+        <span class="player-time" id="player-total">4:23</span>
+      </div>
+    </div>
+    <div class="player-right">
+      <button class="player-btn"><svg viewBox="0 0 24 24"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg></button>
+      <div class="player-volume-bar"><div class="player-volume-fill" style="width:70%"></div></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="js/app.js"></script>
+  <script>
+    // Discover-specific filter logic
+    const filterOptions = document.querySelectorAll('.filter-option');
+    const trackRows = document.querySelectorAll('.track-row');
+    let activeGenre = 'all', activeCert = null;
+
+    filterOptions.forEach(opt => {
+      opt.addEventListener('click', () => {
+        const filterType = opt.dataset.filter;
+        const val = opt.dataset.val;
+
+        // Update UI
+        document.querySelectorAll(`.filter-option[data-filter="${filterType}"]`).forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+
+        if (filterType === 'genre') activeGenre = val;
+        if (filterType === 'cert') activeCert = activeCert === val ? null : val;
+
+        // Filter tracks
+        let visible = 0;
+        trackRows.forEach(row => {
+          const genreMatch = activeGenre === 'all' || row.dataset.genre === activeGenre;
+          const certMatch = !activeCert || row.dataset.cert === activeCert;
+          const show = genreMatch && certMatch;
+          row.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+        document.getElementById('results-count').textContent = `Showing ${visible} of 58,432 tracks`;
+      });
+    });
+
+    // Mood chips
+    document.querySelectorAll('.mood-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+
+    // Search
+    document.getElementById('search-input')?.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      trackRows.forEach(row => {
+        const title = row.querySelector('.track-row-info strong')?.textContent?.toLowerCase() || '';
+        const artist = row.querySelector('.track-row-info span')?.textContent?.toLowerCase() || '';
+        row.style.display = (!q || title.includes(q) || artist.includes(q)) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>
