@@ -10,6 +10,7 @@ export default function Header() {
 
   const links = [
     { href: '#artists', label: t('nav.artists') },
+    { href: '#communaute', label: t('nav.community') },
     { href: '#certifications', label: t('nav.certifications') },
     { href: '#awards', label: t('nav.awards') },
     { href: '#pricing', label: t('nav.pricing') },

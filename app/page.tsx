@@ -1,10 +1,11 @@
 import Header from '@/components/Header'
 import Hero from '@/components/Hero'
 import Ticker from '@/components/Ticker'
-import WhyNkumu from '@/components/WhyNkumu'
-import CertificationsSection from '@/components/CertificationsSection'
 import FeaturedArtists from '@/components/FeaturedArtists'
+import Communaute from '@/components/Communaute'
+import WhyNkumu from '@/components/WhyNkumu'
 import Charts from '@/components/Charts'
+import CertificationsSection from '@/components/CertificationsSection'
 import PreOrders from '@/components/PreOrders'
 import Awards from '@/components/Awards'
 import HowItWorks from '@/components/HowItWorks'
@@ -22,10 +23,11 @@ export default function HomePage() {
       <main>
         <Hero />
         <Ticker />
-        <WhyNkumu />
-        <CertificationsSection />
         <FeaturedArtists />
+        <Communaute />
+        <WhyNkumu />
         <Charts />
+        <CertificationsSection />
         <PreOrders />
         <Awards />
         <HowItWorks />
